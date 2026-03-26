@@ -6,6 +6,12 @@ import org.jmolecules.ddd.annotation.ValueObject;
 @ValueObject
 public record Amount(long amountInCents, Currency currency) {
 
+    public static Validated<Amount> validate(long amount, Currency currency) {
+        if (currency == null)
+            return Validated.invalid(new SalesError.AmountError("Currency must not be null"));
+        return Validated.valid(Amount.of(amount, currency));
+    }
+
     public static Amount of(double amount, Currency currency) {
 		assert currency != null;
 

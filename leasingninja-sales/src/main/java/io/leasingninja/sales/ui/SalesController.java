@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import io.leasingninja.sales.application.FilloutContract;
 import io.leasingninja.sales.application.SignContract;
 import io.leasingninja.sales.application.ViewContract;
-import io.leasingninja.sales.domain.Amount;
-import io.leasingninja.sales.domain.Car;
+import io.leasingninja.sales.domain.Contract;
 import io.leasingninja.sales.domain.ContractNumber;
 import io.leasingninja.sales.domain.Currency;
-import io.leasingninja.sales.domain.Customer;
+import io.leasingninja.sales.domain.SalesError;
 import io.leasingninja.sales.domain.SignDate;
+import io.leasingninja.sales.domain.Validated;
 
 @Controller
 public class SalesController {
@@ -93,12 +93,22 @@ public class SalesController {
 			@RequestParam(name="price_currency") String priceCurrency,
 			Model model) {
         //TODO: Check that priceCurrency is a valid Currency()
-		this.filloutContract.with(
-				ContractNumber.of(contractNumberString),
-				Customer.of(lesseeString),
-				Car.of(carString),
-				Amount.of(priceAmount, Currency.valueOf(priceCurrency)));
-		return "redirect:/sales/view_contract?contractNumber=" + contractNumberString;
+		var result = this.filloutContract.with(
+						contractNumberString,
+						lesseeString,
+						carString,
+						priceAmount, Currency.valueOf(priceCurrency));
+		return switch (result) {
+			case Validated.Invalid<Contract> invalid -> {
+				model.addAttribute("errors", invalid.errors().stream().map(SalesError::message).toList());
+				model.addAttribute("contract", new ContractModel(
+						contractNumberString, lesseeString, carString, priceAmount, priceCurrency));
+				model.addAttribute("editing_disabled", false);
+				yield "contractView";
+			}
+			case Validated.Valid<Contract> ignoreValid ->
+				"redirect:/sales/view_contract?contractNumber=" + contractNumberString;
+		};
 	}
 
 	@PostMapping("/sales/sign_contract")
