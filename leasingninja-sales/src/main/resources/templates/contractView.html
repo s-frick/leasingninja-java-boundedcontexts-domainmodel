@@ -9,6 +9,7 @@
 </head>
 <body>
 	<h1>Leasing contract</h1>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <form action="/sales/fillout_contract" method="post">
 		<fieldset id="input" th:disabled="${editing_disabled}">
 		    <div>

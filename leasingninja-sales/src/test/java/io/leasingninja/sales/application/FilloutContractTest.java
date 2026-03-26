@@ -32,10 +32,10 @@ class FilloutContractTest {
 
 		// When
 		filloutContractUnderTest.with(
-				ContractNumber.of("4711"),
-				Customer.of("Bob Smith"),
-				Car.of("Mercedes Benz E-Class"),
-				Amount.of(10_000, Currency.EUR));
+				"4711",
+				"Bob Smith",
+				"Mercedes Benz E-Class",
+				10_000, Currency.EUR);
 
 
 		// Then

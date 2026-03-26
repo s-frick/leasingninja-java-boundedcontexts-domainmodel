@@ -19,6 +19,7 @@ import io.leasingninja.sales.domain.Car;
 import io.leasingninja.sales.domain.ContractNumber;
 import io.leasingninja.sales.domain.Currency;
 import io.leasingninja.sales.domain.Customer;
+import io.leasingninja.sales.domain.SalesError;
 import io.leasingninja.sales.domain.SignDate;
 
 @Controller
@@ -93,11 +94,19 @@ public class SalesController {
 			@RequestParam(name="price_currency") String priceCurrency,
 			Model model) {
         //TODO: Check that priceCurrency is a valid Currency()
-		this.filloutContract.with(
-				ContractNumber.of(contractNumberString),
-				Customer.of(lesseeString),
-				Car.of(carString),
-				Amount.of(priceAmount, Currency.valueOf(priceCurrency)));
+		var error = this.filloutContract.with(
+						contractNumberString,
+						lesseeString,
+						carString,
+						priceAmount, Currency.valueOf(priceCurrency));
+        if (error.isPresent()) {
+			model.addAttribute("error", error.get().message());
+			model.addAttribute("contract", new ContractModel(
+					contractNumberString, lesseeString, carString, priceAmount, priceCurrency));
+			model.addAttribute("editing_disabled", false);
+			return "contractView";
+		}
+
 		return "redirect:/sales/view_contract?contractNumber=" + contractNumberString;
 	}
 
